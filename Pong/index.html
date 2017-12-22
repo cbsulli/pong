@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Pong!</title>
+		<style>
+			canvas {background: #eee; display: block; margin: 0 auto;}
+		</style>
+	</head>
+	<body>
+		<canvas id="gameCanvas" width="624" height="416"></canvas>
+		<script>
+			var canvas = document.getElementById("gameCanvas");
+			var ctx = canvas.getContext("2d");
+
+			var x = 40;
+			var y = (canvas.height/2)-7.5
+			var dx = 4;
+			var dy = 4;
+			var upPressed = false;
+			var downPressed = false;
+			var wPressed = false;
+			var sPressed = false;
+			var paddleOneHeight = 50;
+			var paddleOneWidth = 10;
+			var paddleOneY = (canvas.height-paddleOneHeight)/2;
+			var paddleTwoHeight = 50;
+			var paddleTwoWidth = 10;
+			var paddleTwoY = (canvas.height-paddleTwoHeight)/2;
+			var scoreOne = 0;
+			var scoreTwo = 0;
+			var time = 0;
+
+			//sound
+			var hit = new Audio("hit.wav");
+			var ring = new Audio("ring.wav");
+			var claps = new Audio("claps.wav");
+
+			document.addEventListener("keydown",keyDownHandler,false);
+			document.addEventListener("keyup",keyUpHandler,false);
+
+			function keyDownHandler(e){
+				if(e.keyCode == 38) {
+					upPressed = true;
+				}
+				else if(e.keyCode == 40) {
+					downPressed = true;
+				}
+				else if(e.keyCode == 87) {
+					wPressed = true;
+				}
+				else if(e.keyCode == 83) {
+					sPressed = true;
+				}
+			}
+			function keyUpHandler(e){
+				if(e.keyCode == 38) {
+					upPressed = false;
+				}
+				else if(e.keyCode == 40) {
+					downPressed = false;
+				}
+				else if(e.keyCode == 87) {
+					wPressed = false;
+				}
+				else if(e.keyCode == 83) {
+					sPressed = false;
+				}
+			}
+			function drawArena() {
+				ctx.beginPath();
+				ctx.rect(canvas.width/2-5,0,10,416);
+				ctx.fillStyle="#0095DD";
+				ctx.fill();
+				ctx.closePath();
+			}
+			function drawBall() {
+				ctx.beginPath();
+				ctx.rect(x,y,15,15);
+				ctx.fillStyle = "#0095DD";
+				ctx.fill();
+				ctx.closePath();
+			}
+			function drawPaddleOne() {
+				ctx.beginPath();
+				ctx.rect(canvas.width - paddleOneWidth,paddleOneY,paddleOneWidth,paddleOneHeight);
+				ctx.fillStyle = "#ff5733";
+				ctx.fill();
+				ctx.closePath();
+			}
+			function drawPaddleTwo() {
+				ctx.beginPath();
+				ctx.rect(0,paddleTwoY,paddleTwoWidth, paddleTwoHeight);
+				ctx.fillStyle = "#3cff33";
+				ctx.fill();
+				ctx.closePath();
+			}
+			function collision() {
+				if(x + dx > canvas.width - 15) {
+					if(y>paddleOneY-15 && y <paddleOneY+paddleOneHeight){
+						if(x = x - paddleOneWidth){
+							hit.play();
+							dx = -dx;
+						}
+					}
+					else{
+						ring.play();
+						scoreOne++;
+						dx = -dx;
+						x = canvas.width - 40;
+						y = (canvas.height/2)-7.5;
+						paddleTwoY = (canvas.height-paddleTwoHeight)/2;
+						paddleOneY = (canvas.height-paddleTwoHeight)/2;
+						time = 1;
+					}
+				}
+				if(x + dx < 0) {
+					if(y>paddleTwoY-15 && y < paddleTwoY+paddleTwoHeight){
+						if(x = x + paddleTwoWidth) {
+							hit.play();
+							dx = -dx;
+						}
+					}
+					else{
+						ring.play();
+						scoreTwo++;
+						dx = -dx;
+						x = 40;
+						y = (canvas.height/2)-7.5;
+						paddleTwoY = (canvas.height-paddleTwoHeight)/2;
+						paddleOneY = (canvas.height-paddleTwoHeight)/2;
+						time = 1;
+					}
+				}
+				if(y + dy > canvas.height - 15|| y + dy < 0) {
+					dy = -dy;
+				}
+			}
+			function drawScore() {
+				ctx.font = "30px Courier";
+				ctx.fillStyle = "#ff5733"
+				ctx.fillText(scoreTwo,canvas.width*.75,50);
+				ctx.fillStyle = "#3CFF33"
+				ctx.fillText(scoreOne,canvas.width*.25,50);
+				if(scoreOne == 7 || scoreTwo == 7) {
+					claps.play();
+					if(scoreOne > scoreTwo) {
+						alert("Green wins!");
+						document.location.reload();
+					}
+					else {
+						alert("Orange wins!");
+						document.location.reload();
+					}
+				}
+			}
+			function draw() {
+				ctx.clearRect(0,0,canvas.width, canvas.height);
+				drawArena();
+				drawBall();
+				drawPaddleOne();
+				drawPaddleTwo();
+				collision();
+				drawScore();
+				if(time == 0){
+					if(upPressed == true && paddleOneY>0) {
+						paddleOneY -= 5;
+					}
+					if(downPressed == true && paddleOneY<canvas.height-paddleOneHeight) {
+						paddleOneY += 5;
+					}
+					if(wPressed == true && paddleTwoY>0) {
+						paddleTwoY -= 5;
+					}
+					if(sPressed == true && paddleTwoY<canvas.height-paddleTwoHeight) {
+						paddleTwoY += 5;
+					}
+					x=x+dx;
+					y=y+dy;
+				}
+				else if(time == 100){
+					time = 0;
+				}
+				else{
+					time++;
+				}
+			}
+			setInterval(draw,10);
+		</script>
+	</body>
+</html>
